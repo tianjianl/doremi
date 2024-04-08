@@ -19,6 +19,7 @@ from tokenizers.processors import TemplateProcessing
 
 PILE_DOMAINS = ['en', 'it', 'zh', 'sw']
 
+D_2_SIZE = {'en':['01024', '00008'], 'it':['01024', '00008'], 'zh': ['01024','00002'], 'sw': ['00032', '00001']}
 DOMAIN_TO_IDX = {
     name: idx for idx, name in enumerate(PILE_DOMAINS)}
 
@@ -69,16 +70,19 @@ def main():
     if args.split == 'train':
         output_dir = Path(args.output_dir) / args.split / args.domain / args.subset
     else:
-        output_dir = Path(args.output_dir) / args.split / args.domain
+        output_dir = Path(args.output_dir) / args.split / args.domain / args.subset
     if output_dir.exists():
         print("Already done, skipping")
         return
     
     pile_dir = Path(args.pile_path_dir)
+
     if args.split == 'train':
-        data_files = [str(pile_dir / args.domain / f"c4-train.{args.subset}-of-01024.json.gz")]
-    elif args.split == 'validation':
-        data_files = [str(pile_dir / args.domain / "val.jsonl.zst")]
+        sizestr = D_2_SIZE[args.domain][0]
+        data_files = [str(pile_dir / args.domain / f"c4-train.{args.subset}-of-{sizestr}.json.gz")]
+    elif args.split == 'valid':
+        sizestr = D_2_SIZE[args.domain][1]
+        data_files = [str(pile_dir / args.domain / f"c4-{args.domain}-validation.tfrecord-{args.subset}-of-{sizestr}.json.gz")]
     else:
         data_files = [str(pile_dir / args.domain/ f"test.jsonl.zst")]
 

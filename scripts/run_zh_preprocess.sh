@@ -1,10 +1,10 @@
 source constants.sh
 INTERMEDIATE_SCRATCH_PATH=${CACHE}/pile_preprocessed_tmp
 TOKENIZER=google/mt5-large
-SPLIT=train
+SPLIT=valid
 
 PILE_DOMAIN="zh"
-for file in $(ls /scratch/tli104/mc4/c4/tilted_data/${PILE_DOMAIN}); do
+for file in $(ls /scratch/tli104/mc4/c4/tilted_data/${PILE_DOMAIN} | grep 'validation' ); do
 SUBSET=$(echo "$file" | cut -d '-' -f 3)
 LOGDIR=logs/preprocess_mc4/${SPLIT}
 mkdir -p ${LOGDIR}

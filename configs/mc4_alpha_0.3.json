@@ -1,0 +1,14 @@
+{
+    "train_domain_weights": {
+    	"en": 5.67,
+		"it": 2.43,
+		"zh": 1.67,
+		"sw": 0.5
+	},
+    "eval_domain_weights": {
+    	"en": 5.67,
+		"it": 2.43,
+		"zh": 1.67,
+		"sw": 0.5
+	}
+}

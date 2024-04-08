@@ -19,6 +19,7 @@ export WANDB_DIR=${CACHE}/wandb
 
 PREPROCESSED_DATA=${PREPROCESSED_PILE_DIR}
 
+
 DOMAIN_CONFIG_NAME=${1:-pile_baseline_50kvocab_nopack}
 arg=${2:-""} # set to eval to run eval
 
@@ -29,7 +30,7 @@ else
 fi
 
 NAME=${DOMAIN_CONFIG_NAME}_120M
-accelerate launch \
+CUDA_LAUNCH_BLOCKING=1 accelerate launch \
     --config_file accelerate_config.yml \
     --num_machines 1 \
     --num_processes 8 \
@@ -38,15 +39,15 @@ accelerate launch \
     doremi/train.py \
     --dataset_name pile \
     --model_type gpt_flash \
-    --tokenizer_name togethercomputer/RedPajama-INCITE-Base-7B-v0.1 \
+    --tokenizer_name google/mt5-large \
     --do_train \
     --cache_dir ${CACHE} \
     --dataset_dir ${PREPROCESSED_DATA} \
     --domain_config_path configs/${DOMAIN_CONFIG_NAME}.json \
     --output_dir ${MODEL_OUTPUT_DIR}/${NAME} \
     --max_token_length 1024 \
-    --per_device_train_batch_size 64 \
-    --gradient_accumulation_steps 1 \
+    --per_device_train_batch_size 8 \
+    --gradient_accumulation_steps 8 \
     --dataloader_num_workers 1 \
     --max_steps 200000 \
     --evaluation_strategy steps \
@@ -73,6 +74,6 @@ accelerate launch \
     --adam_beta2 0.99 \
     --bf16 \
     --shuffle \
-    --config_overrides="n_positions=1024,n_embd=768,n_layer=12,n_head=12,rotary_emb_fraction=0.25,tie_word_embeddings=True,scale_attn_by_inverse_layer_idx=False,embd_pdrop=0.0,resid_pdrop=0.0,attn_pdrop=0.0,eos_token_id=0,bos_token_id=0,max_position_embeddings=0,vocab_size=50277" \
+    --config_overrides="n_positions=1024,n_embd=768,n_layer=12,n_head=12,rotary_emb_fraction=0.25,tie_word_embeddings=True,scale_attn_by_inverse_layer_idx=False,embd_pdrop=0.0,resid_pdrop=0.0,attn_pdrop=0.0,eos_token_id=0,bos_token_id=0,max_position_embeddings=0,vocab_size=250112" \
     ${ADDITIONAL_ARGS}
 
