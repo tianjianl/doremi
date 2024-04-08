@@ -4,22 +4,25 @@
 source constants.sh
 
 INTERMEDIATE_SCRATCH_PATH=${CACHE}/pile_preprocessed_tmp
-TOKENIZER=togethercomputer/RedPajama-INCITE-Base-7B-v0.1
+
+TOKENIZER=google/mt5-large
+#TOKENIZER=togethercomputer/RedPajama-INCITE-Base-7B-v0.1
 
 SPLIT=train
-for PILE_DOMAIN in "ArXiv" "DM_Mathematics" "Enron_Emails" "EuroParl" "FreeLaw" "Github" "HackerNews" "NIH_ExPorter" "OpenSubtitles" "OpenWebText2" "PhilPapers" "Pile-CC" "PubMed_Abstracts" "PubMed_Central" "StackExchange" "USPTO_Backgrounds" "Wikipedia_(en)" "YoutubeSubtitles"; do
-for SUBSET in 00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29; do
-LOGDIR=logs/preprocess_pile/${SPLIT}
+#for PILE_DOMAIN in "ArXiv" "DM_Mathematics" "Enron_Emails" "EuroParl" "FreeLaw" "Github" "HackerNews" "NIH_ExPorter" "OpenSubtitles" "OpenWebText2" "PhilPapers" "Pile-CC" "PubMed_Abstracts" "PubMed_Central" "StackExchange" "USPTO_Backgrounds" "Wikipedia_(en)" "YoutubeSubtitles"; do
+PILE_DOMAIN="sw"
+for file in $(ls /scratch/tli104/mc4/c4/tilted_data/sw); do
+SUBSET==$(echo "$file" | cut -d '-' -f 3)
+LOGDIR=logs/preprocess_mc4/${SPLIT}
 mkdir -p ${LOGDIR}
 jid=$(sbatch \
         --parsable \
         --partition ${PARTITION} \
         --mem 8G \
         -c 1 \
-        --output ${LOGDIR}/${PILE_DOMAIN}_${SUBSET} \
+        --output ${LOGDIR}/${PILE_DOMAIN}_${subset} \
         scripts/run.sh "python scripts/preprocess_pile.py --pile_path_dir ${PILE_DIR} --output_dir ${PREPROCESSED_PILE_DIR} --intermediate_dir ${INTERMEDIATE_SCRATCH_PATH} --cache_dir ${CACHE} --split ${SPLIT} --domain \"${PILE_DOMAIN}\" --tokenizer ${TOKENIZER} --seed 111 --nproc 1 --subset ${SUBSET}")
 echo -n "${jid} "
-done
 done
 
 

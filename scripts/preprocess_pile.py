@@ -15,13 +15,14 @@ from itertools import chain
 from tokenizers.processors import TemplateProcessing
 
 
-PILE_DOMAINS = ['ArXiv', 'BookCorpus2', 'Books3', 'DM Mathematics', 'Enron Emails', 'EuroParl', 'FreeLaw', 'Github', 'Gutenberg (PG-19)', 'HackerNews', 'NIH ExPorter', 'OpenSubtitles', 'OpenWebText2', 'PhilPapers', 'Pile-CC', 'PubMed Abstracts', 'PubMed Central', 'StackExchange', 'USPTO Backgrounds', 'Ubuntu IRC', 'Wikipedia (en)', 'YoutubeSubtitles']
+#PILE_DOMAINS = ['ArXiv', 'BookCorpus2', 'Books3', 'DM Mathematics', 'Enron Emails', 'EuroParl', 'FreeLaw', 'Github', 'Gutenberg (PG-19)', 'HackerNews', 'NIH ExPorter', 'OpenSubtitles', 'OpenWebText2', 'PhilPapers', 'Pile-CC', 'PubMed Abstracts', 'PubMed Central', 'StackExchange', 'USPTO Backgrounds', 'Ubuntu IRC', 'Wikipedia (en)', 'YoutubeSubtitles']
+
+PILE_DOMAINS = ['en', 'it', 'zh', 'sw']
 
 DOMAIN_TO_IDX = {
     name: idx for idx, name in enumerate(PILE_DOMAINS)}
 
 PILE_SUBSETS = [f'0{i}' if i < 10 else str(i) for i in range(0, 30)]
-
 
 def pile_transform(tokenizer, max_length, seed=None):
     def transform(batch):
@@ -72,14 +73,14 @@ def main():
     if output_dir.exists():
         print("Already done, skipping")
         return
-
+    
     pile_dir = Path(args.pile_path_dir)
     if args.split == 'train':
-        data_files = [str(pile_dir / f"{args.subset}.jsonl.zst")]
+        data_files = [str(pile_dir / args.domain / f"c4-train.{args.subset}-of-01024.json.gz")]
     elif args.split == 'validation':
-        data_files = [str(pile_dir / "val.jsonl.zst")]
+        data_files = [str(pile_dir / args.domain / "val.jsonl.zst")]
     else:
-        data_files = [str(pile_dir / f"test.jsonl.zst")]
+        data_files = [str(pile_dir / args.domain/ f"test.jsonl.zst")]
 
 
     # load dataset
@@ -101,8 +102,8 @@ def main():
             special_tokens=[(tokenizer.eos_token, tokenizer.eos_token_id)])
     transform = pile_transform(tokenizer, args.max_length, seed=args.seed)
 
-    ds = ds.filter(filter_fn, with_indices=True)
-    ds = ds.map(transform, batched=True, remove_columns=['text', 'meta'])
+    #ds = ds.filter(filter_fn, with_indices=True)
+    ds = ds.map(transform, batched=True, remove_columns=['text', 'timestamp', 'url'])
 
     # create a generator
     def data_generator():
