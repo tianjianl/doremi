@@ -36,15 +36,15 @@ accelerate launch \
     doremi/train.py \
     --dataset_name pile \
     --model_type gpt_flash \
-    --tokenizer_name togethercomputer/RedPajama-INCITE-Base-7B-v0.1 \
+    --tokenizer_name google/mt5-large \
     --do_train \
     --cache_dir ${CACHE} \
     --dataset_dir ${PREPROCESSED_PILE_DIR} \
     --domain_config_path configs/pile_uniform.json \
     --output_dir ${MODEL_OUTPUT_DIR}/${NAME} \
     --max_token_length 1024 \
-    --per_device_train_batch_size 64 \
-    --gradient_accumulation_steps 1 \
+    --per_device_train_batch_size 16 \
+    --gradient_accumulation_steps 4 \
     --dataloader_num_workers 1 \
     --max_steps 200000 \
     --evaluation_strategy no \

@@ -24,7 +24,7 @@ REFERENCE_WEIGHTS_NAME=${2:-"pile_baseline_50kvocab_nopack"}
 arg=${3:-""} # set to eval to run eval
 
 if [[ "${arg}" == "eval" ]]; then
-    ADDITIONAL_ARGS="--evaluation_strategy steps --per_device_eval_batch_size 32 --do_train false --remove_unused_columns=False --downstream_datasets trivia_qa,web_questions,lambada,natural_questions,squad_v2 --skip_perplexity_eval --eval_all_checkpoints"
+    ADDITIONAL_ARGS="--evaluation_strategy steps --per_device_eval_batch_size 32 --do_train false --remove_unused_columns=False --downstream_datasets squad_v2 --skip_perplexity_eval --eval_all_checkpoints"
 else
     ADDITIONAL_ARGS=""
 fi
@@ -40,15 +40,15 @@ accelerate launch \
     doremi/train.py \
     --dataset_name pile \
     --model_type gpt_flash \
-    --tokenizer_name togethercomputer/RedPajama-INCITE-Base-7B-v0.1 \
+    --tokenizer_name google/mt5-large \
     --do_train \
     --cache_dir ${CACHE} \
     --dataset_dir ${PREPROCESSED_DATA} \
     --domain_config_path configs/pile_doremi_r${ROUND}_120M_ref:${REFERENCE_WEIGHTS_NAME}_120M.json \
     --output_dir ${MODEL_OUTPUT_DIR}/${NAME} \
     --max_token_length 1024 \
-    --per_device_train_batch_size 64 \
-    --gradient_accumulation_steps 1 \
+    --per_device_train_batch_size 16 \
+    --gradient_accumulation_steps 4 \
     --dataloader_num_workers 1 \
     --max_steps 200000 \
     --save_strategy steps \

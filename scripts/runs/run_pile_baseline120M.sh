@@ -24,20 +24,20 @@ DOMAIN_CONFIG_NAME=${1:-pile_baseline_50kvocab_nopack}
 arg=${2:-""} # set to eval to run eval
 
 if [[ "${arg}" == "eval" ]]; then
-   ADDITIONAL_ARGS="--evaluation_strategy steps --per_device_eval_batch_size 32 --do_train false --remove_unused_columns=False --downstream_datasets trivia_qa,web_questions,lambada,natural_questions,squad_v2 --eval_all_checkpoints --skip_perplexity_eval"
+   ADDITIONAL_ARGS="--evaluation_strategy steps --per_device_eval_batch_size 32 --do_train false --remove_unused_columns=False --downstream_datasets squad_v2 --eval_all_checkpoints --skip_perplexity_eval"
 else
     ADDITIONAL_ARGS=""
 fi
 
 NAME=${DOMAIN_CONFIG_NAME}_120M
-CUDA_LAUNCH_BLOCKING=1 accelerate launch \
+accelerate launch \
     --config_file accelerate_config.yml \
     --num_machines 1 \
     --num_processes 8 \
     --multi_gpu \
     --main_process_port 60100 \
     doremi/train.py \
-    --dataset_name pile \
+    --dataset_name mc4 \
     --model_type gpt_flash \
     --tokenizer_name google/mt5-large \
     --do_train \
@@ -46,12 +46,12 @@ CUDA_LAUNCH_BLOCKING=1 accelerate launch \
     --domain_config_path configs/${DOMAIN_CONFIG_NAME}.json \
     --output_dir ${MODEL_OUTPUT_DIR}/${NAME} \
     --max_token_length 1024 \
-    --per_device_train_batch_size 8 \
-    --gradient_accumulation_steps 8 \
+    --per_device_train_batch_size 16 \
+    --gradient_accumulation_steps 4 \
     --dataloader_num_workers 1 \
     --max_steps 200000 \
     --evaluation_strategy steps \
-    --eval_steps 10000 \
+    --eval_steps 100 \
     --per_device_eval_batch_size 32 \
     --remove_unused_columns=False \
     --save_strategy steps \
@@ -74,6 +74,7 @@ CUDA_LAUNCH_BLOCKING=1 accelerate launch \
     --adam_beta2 0.99 \
     --bf16 \
     --shuffle \
+    --eval_dataset_dir /scratch/tli104/mc4/c4/tilted_data_preprocessed \
     --config_overrides="n_positions=1024,n_embd=768,n_layer=12,n_head=12,rotary_emb_fraction=0.25,tie_word_embeddings=True,scale_attn_by_inverse_layer_idx=False,embd_pdrop=0.0,resid_pdrop=0.0,attn_pdrop=0.0,eos_token_id=0,bos_token_id=0,max_position_embeddings=0,vocab_size=250112" \
     ${ADDITIONAL_ARGS}
 
